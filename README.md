@@ -1,16 +1,32 @@
-# React + Vite
+# 💻 Digilib Web Application (`mss301-digilib-fe`)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 📖 Giới thiệu
+**Digilib Web App** là giao diện người dùng (Frontend) của hệ thống **Digital Library Management System**. 
 
-Currently, two official plugins are available:
+Được xây dựng theo kiến trúc Single Page Application (SPA), ứng dụng này đóng vai trò là điểm tương tác trực tiếp với người dùng (độc giả và thủ thư). Thay vì gọi trực tiếp đến từng Microservice nội bộ, toàn bộ dữ liệu của Frontend đều được giao tiếp thông qua một cổng duy nhất là **API Gateway**.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🚀 Tính năng chính (Map theo Services)
+* **Auth & Member:** Đăng nhập, đăng ký, quản lý hồ sơ độc giả (giao tiếp với `identity-service` và `member-service`).
+* **Book Catalog:** Xem danh sách, tìm kiếm và xem chi tiết tài liệu (giao tiếp với `book-service`).
+* **Loan Management:** Thực hiện nghiệp vụ mượn/trả sách, xem lịch sử mượn (giao tiếp với `loan-service`).
+* **Fine & Notification:** Xem các khoản phạt trễ hạn và thông báo nhắc nhở (giao tiếp với `fine-service` và `notification-service`).
 
-## React Compiler
+## 🛠 Tech Stack
+* **Core:** React.js (khởi tạo qua Vite)
+* **Styling & UI:** Tailwind CSS, shadcn/ui (Atomic Design)
+* **Routing:** React Router DOM
+* **API Client:** Axios
+* **State Management:** (Tùy chọn: Redux Toolkit / Zustand / Context API)
+* **Môi trường chạy:** Node.js
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## ⚙️ Cài đặt & Khởi chạy
 
-## Expanding the ESLint configuration
+### Yêu cầu hệ thống
+* Node.js (phiên bản 18.x trở lên)
+* Hệ thống Backend (ít nhất là `eureka-server` và `api-gateway`) phải đang hoạt động.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Các bước thực hiện
+1. **Clone repository về máy:**
+   ```bash
+   git clone https://github.com/PhuNguyen12345/mss301-digilib-fe.git
+   cd mss301-digilib-fe
