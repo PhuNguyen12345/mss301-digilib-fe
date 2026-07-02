@@ -11,12 +11,12 @@ import {
   LogOut,
   UsersRound,
 } from 'lucide-react'
-import { Link } from 'react-router-dom'
-import leadersImage from '@/assets/about-leaders.png'
+import { Link, useNavigate } from 'react-router-dom'
+import useAuthStore from '@/store/authSlice'
 
 const navItems = [
   { key: 'dashboard', label: 'Dashboard', icon: Grid2X2, to: '/admin' },
-  { key: 'users', label: 'Người dùng', icon: UsersRound, to: '#users' },
+  { key: 'users', label: 'Người dùng', icon: UsersRound, to: '/admin/members' },
   { key: 'reports', label: 'Báo cáo', icon: BarChart3, to: '#reports' },
   { key: 'logs', label: 'Nhật ký', icon: Clock3, to: '#logs' },
 ]
@@ -98,6 +98,12 @@ function AdminFooter() {
 }
 
 function AdminLayout({ active = 'dashboard', title, description, action, children }) {
+  const { user } = useAuthStore()
+  const logout = useAuthStore((s) => s.logout)
+  const navigate = useNavigate()
+  const displayName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Admin User' : 'Admin User'
+  const initials = (user?.firstName?.[0] || 'A').toUpperCase() + (user?.lastName?.[0] || 'U').toUpperCase()
+
   const [openGroups, setOpenGroups] = useState({
     books: true,
   })
@@ -107,6 +113,11 @@ function AdminLayout({ active = 'dashboard', title, description, action, childre
       ...current,
       [key]: !current[key],
     }))
+  }
+
+  async function handleLogout() {
+    await logout()
+    navigate('/login')
   }
 
   return (
@@ -135,20 +146,20 @@ function AdminLayout({ active = 'dashboard', title, description, action, childre
         </nav>
 
         <div className="mt-4 rounded-2xl border border-white/10 bg-white/6 p-3">
-          <a href="#profile" className="flex items-center gap-3 rounded-xl px-2 py-2 transition hover:bg-white/8">
-            <span className="h-9 w-9 overflow-hidden rounded-xl bg-white/90">
-              <img src={leadersImage} alt="Admin User" className="h-full w-full object-cover object-left" />
+          <Link to="/profile" className="flex items-center gap-3 rounded-xl px-2 py-2 transition hover:bg-white/8">
+            <span className="grid h-9 w-9 place-items-center rounded-xl bg-slate-700 text-xs font-bold text-white">
+              {initials}
             </span>
             <span className="min-w-0 flex-1">
               <span className="block text-[10px] uppercase tracking-[0.18em] text-sky-300">Tài khoản</span>
-              <span className="block truncate text-sm font-semibold text-white">Admin User</span>
+              <span className="block truncate text-sm font-semibold text-white">{displayName}</span>
             </span>
             <ChevronRight size={15} className="text-slate-400" />
-          </a>
-          <a href="#logout" className="mt-2 flex items-center gap-3 rounded-xl px-2 py-2 text-sm font-medium text-slate-200 transition hover:bg-white/8 hover:text-white">
+          </Link>
+          <button onClick={handleLogout} className="mt-2 flex w-full items-center gap-3 rounded-xl px-2 py-2 text-sm font-medium text-slate-200 transition hover:bg-white/8 hover:text-white">
             <LogOut size={16} />
             Đăng xuất
-          </a>
+          </button>
         </div>
       </aside>
 
@@ -163,9 +174,9 @@ function AdminLayout({ active = 'dashboard', title, description, action, childre
                 <CircleHelp size={16} />
               </button>
               <div className="ml-2 flex items-center gap-2.5 border-l border-slate-200 pl-4">
-                <span className="text-[13px] font-semibold text-slate-800">Admin User</span>
-                <span className="h-8 w-8 overflow-hidden rounded-full bg-slate-200">
-                  <img src={leadersImage} alt="Admin User" className="h-full w-full object-cover object-left" />
+                <span className="text-[13px] font-semibold text-slate-800">{displayName}</span>
+                <span className="grid h-8 w-8 place-items-center rounded-full bg-slate-200 text-xs font-bold text-slate-700">
+                  {initials}
                 </span>
               </div>
             </div>

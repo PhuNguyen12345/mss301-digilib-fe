@@ -13,8 +13,8 @@ import {
   PanelTop,
   UsersRound,
 } from 'lucide-react'
-import { Link } from 'react-router-dom'
-import leadersImage from '@/assets/about-leaders.png'
+import { Link, useNavigate } from 'react-router-dom'
+import useAuthStore from '@/store/authSlice'
 
 const bookLinks = [
   { key: 'catalog', label: 'Danh mục sách', to: '/librarian/books' },
@@ -96,6 +96,12 @@ function LibrarianFooter() {
 }
 
 function LibrarianLayout({ active = 'dashboard', title, description, action, children }) {
+  const { user } = useAuthStore()
+  const logout = useAuthStore((s) => s.logout)
+  const navigate = useNavigate()
+  const displayName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Librarian' : 'Librarian'
+  const initials = (user?.firstName?.[0] || 'L').toUpperCase() + (user?.lastName?.[0] || '').toUpperCase()
+
   const [openGroups, setOpenGroups] = useState({
     books: true,
     loans: false,
@@ -107,6 +113,11 @@ function LibrarianLayout({ active = 'dashboard', title, description, action, chi
       ...current,
       [key]: !current[key],
     }))
+  }
+
+  async function handleLogout() {
+    await logout()
+    navigate('/login')
   }
 
   return (
@@ -138,26 +149,26 @@ function LibrarianLayout({ active = 'dashboard', title, description, action, chi
               </a>
             ))}
           </SidebarGroup>
-          <MainLink icon={UsersRound} label="Người dùng" to="#users" />
+          <MainLink icon={UsersRound} label="Người dùng" to="/librarian/members" active={active === 'users'} />
           <MainLink icon={BarChart3} label="Báo cáo" to="#reports" />
           <MainLink icon={History} label="Nhật ký" to="#logs" />
         </nav>
 
         <div className="mt-4 rounded-2xl border border-white/10 bg-white/6 p-3">
-          <a href="#profile" className="flex items-center gap-3 rounded-xl px-2 py-2 transition hover:bg-white/8">
-            <span className="h-9 w-9 overflow-hidden rounded-xl bg-white/90">
-              <img src={leadersImage} alt="Librarian" className="h-full w-full object-cover object-left" />
+          <Link to="/profile" className="flex items-center gap-3 rounded-xl px-2 py-2 transition hover:bg-white/8">
+            <span className="grid h-9 w-9 place-items-center rounded-xl bg-slate-700 text-xs font-bold text-white">
+              {initials}
             </span>
             <span className="min-w-0 flex-1">
               <span className="block text-[10px] uppercase tracking-[0.18em] text-sky-300">Tài khoản</span>
-              <span className="block truncate text-sm font-semibold text-white">Librarian</span>
+              <span className="block truncate text-sm font-semibold text-white">{displayName}</span>
             </span>
             <ChevronRight size={15} className="text-slate-400" />
-          </a>
-          <a href="#logout" className="mt-2 flex items-center gap-3 rounded-xl px-2 py-2 text-sm font-medium text-slate-200 transition hover:bg-white/8 hover:text-white">
+          </Link>
+          <button onClick={handleLogout} className="mt-2 flex w-full items-center gap-3 rounded-xl px-2 py-2 text-sm font-medium text-slate-200 transition hover:bg-white/8 hover:text-white">
             <LogOut size={16} />
             Đăng xuất
-          </a>
+          </button>
         </div>
       </aside>
 
@@ -172,9 +183,9 @@ function LibrarianLayout({ active = 'dashboard', title, description, action, chi
                 <CircleHelp size={16} />
               </button>
               <div className="ml-2 flex items-center gap-2.5 border-l border-slate-200 pl-4">
-                <span className="text-[13px] font-semibold text-slate-800">Librarian</span>
-                <span className="h-8 w-8 overflow-hidden rounded-full bg-slate-200">
-                  <img src={leadersImage} alt="Librarian" className="h-full w-full object-cover object-left" />
+                <span className="text-[13px] font-semibold text-slate-800">{displayName}</span>
+                <span className="grid h-8 w-8 place-items-center rounded-full bg-slate-200 text-xs font-bold text-slate-700">
+                  {initials}
                 </span>
               </div>
             </div>
