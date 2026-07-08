@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import Home from './pages/dashboard/Home'
 import Login from './pages/auth/Login'
 import BookList from './pages/books/BookList'
@@ -6,13 +6,11 @@ import BookDetail from './pages/books/BookDetail'
 import AboutUs from './pages/books/AboutUs'
 import AdminDashboard from './pages/dashboard/AdminDashboard'
 import AdminBookManage from './pages/books/admin/AdminBookManage'
-import AdminBookForm from './pages/books/admin/AdminBookForm'
+import AdminDeletedBookManage from './pages/books/admin/AdminDeletedBookManage'
 import AdminDigitalBookManage from './pages/books/admin/AdminDigitalBookManage'
-import AdminDigitalBookForm from './pages/books/admin/AdminDigitalBookForm'
 import AdminCopyManage from './pages/books/admin/AdminCopyManage'
-import AdminCopyForm from './pages/books/admin/AdminCopyForm'
 import AdminCategoryManage from './pages/books/admin/AdminCategoryManage'
-import AdminCategoryForm from './pages/books/admin/AdminCategoryForm'
+import AdminClassificationManage from './pages/books/admin/AdminClassificationManage'
 import LibrarianDashboard from './pages/books/librarian/LibrarianDashboard'
 import LibrarianBookCatalog from './pages/books/librarian/LibrarianBookCatalog'
 import LibrarianInventory from './pages/books/librarian/LibrarianInventory'
@@ -35,17 +33,19 @@ function App() {
         <Route path="/about" element={<AboutUs />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/books" element={<AdminBookManage />} />
-        <Route path="/admin/books/add" element={<AdminBookForm mode="add" />} />
-        <Route path="/admin/books/:bookId/edit" element={<AdminBookForm mode="edit" />} />
+        <Route path="/admin/books/deleted" element={<AdminDeletedBookManage />} />
+        <Route path="/admin/books/add" element={<Navigate to="/admin/books" replace />} />
+        <Route path="/admin/books/:bookId/edit" element={<Navigate to="/admin/books" replace />} />
         <Route path="/admin/digital-books" element={<AdminDigitalBookManage />} />
-        <Route path="/admin/digital-books/add" element={<AdminDigitalBookForm mode="add" />} />
-        <Route path="/admin/digital-books/:bookId/edit" element={<AdminDigitalBookForm mode="edit" />} />
+        <Route path="/admin/digital-books/add" element={<Navigate to="/admin/digital-books" replace />} />
+        <Route path="/admin/digital-books/:resourceId/edit" element={<Navigate to="/admin/digital-books" replace />} />
         <Route path="/admin/copies" element={<AdminCopyManage />} />
-        <Route path="/admin/copies/add" element={<AdminCopyForm mode="add" />} />
-        <Route path="/admin/copies/:copyId/edit" element={<AdminCopyForm mode="edit" />} />
+        <Route path="/admin/copies/add" element={<Navigate to="/admin/copies" replace />} />
+        <Route path="/admin/copies/:copyId/edit" element={<Navigate to="/admin/copies" replace />} />
         <Route path="/admin/categories" element={<AdminCategoryManage />} />
-        <Route path="/admin/categories/add" element={<AdminCategoryForm mode="add" />} />
-        <Route path="/admin/categories/:categoryId/edit" element={<AdminCategoryForm mode="edit" />} />
+        <Route path="/admin/categories/add" element={<Navigate to="/admin/categories" replace />} />
+        <Route path="/admin/categories/:categoryId/edit" element={<Navigate to="/admin/categories" replace />} />
+        <Route path="/admin/classifications" element={<AdminClassificationManage />} />
         <Route path="/librarian" element={<LibrarianDashboard />} />
         <Route path="/librarian/books" element={<LibrarianBookCatalog />} />
         <Route path="/librarian/books/add" element={<LibrarianBookForm mode="add" />} />

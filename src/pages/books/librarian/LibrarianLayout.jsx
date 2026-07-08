@@ -17,7 +17,7 @@ import { Link } from 'react-router-dom'
 import leadersImage from '@/assets/about-leaders.png'
 
 const bookLinks = [
-  { key: 'catalog', label: 'Danh mục sách', to: '/librarian/books' },
+  { key: 'catalog', label: 'Thông tin sách', to: '/librarian/books' },
   { key: 'inventory', label: 'Kho sách', to: '/librarian/inventory' },
   { key: 'digital', label: 'Sách điện tử', to: '/librarian/digital-books' },
   { key: 'genres', label: 'Danh mục thể loại', to: '/librarian/genres' },

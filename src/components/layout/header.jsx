@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 const navItems = [
   { label: 'Trang chủ', to: '/' },
   { label: 'Danh mục', to: '/books' },
-  { label: 'About Us', to: '/about' },
+  { label: 'Giới thiệu', to: '/about' },
 ]
 
 function Header() {
