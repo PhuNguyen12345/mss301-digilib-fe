@@ -54,7 +54,7 @@ function LoanHistory() {
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('ALL')
   const [busyLoanId, setBusyLoanId] = useState(null)
-  const memberId = user?.memberCode || user?.id
+  const memberId = user?.id || user?.memberCode
 
   const loadLoans = useCallback(async () => {
     if (!memberId) {
