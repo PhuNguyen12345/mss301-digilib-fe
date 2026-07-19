@@ -8,6 +8,7 @@ import Home from './pages/dashboard/Home'
 import Login from './pages/auth/Login'
 import Register from './pages/auth/Register'
 import VerifyEmail from './pages/auth/VerifyEmail'
+import ForgotPassword from './pages/auth/ForgotPassword'
 import OAuth2Callback from './pages/auth/OAuth2Callback'
 import BookList from './pages/books/BookList'
 import BookDetail from './pages/books/BookDetail'
@@ -59,6 +60,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/oauth2/callback" element={<OAuth2Callback />} />
 
         {/* ── Authenticated (any role) ────────────────────────────── */}

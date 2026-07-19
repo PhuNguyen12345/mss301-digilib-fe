@@ -126,9 +126,9 @@ function Login() {
                 <label htmlFor="password" className="text-sm font-bold tracking-wide text-slate-900">
                   Mật khẩu
                 </label>
-                <a href="#" className="text-sm font-bold text-slate-950 underline-offset-4 hover:underline">
+                <Link to="/forgot-password" className="text-sm font-bold text-slate-950 underline-offset-4 hover:underline">
                   Quên mật khẩu?
-                </a>
+                </Link>
               </div>
               <input
                 id="password"

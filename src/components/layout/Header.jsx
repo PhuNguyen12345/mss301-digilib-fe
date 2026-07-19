@@ -81,11 +81,18 @@ function Header() {
               </Button>
             </>
           ) : (
-            <NavLink to="/login">
-              <Button variant="default" size="sm" className="rounded-full px-4">
-                Đăng nhập
-              </Button>
-            </NavLink>
+            <div className="flex items-center gap-2">
+              <NavLink to="/login">
+                <Button variant="ghost" size="sm" className="rounded-full px-4 text-slate-600 hover:text-slate-950">
+                  Đăng nhập
+                </Button>
+              </NavLink>
+              <NavLink to="/register">
+                <Button variant="default" size="sm" className="rounded-full px-4">
+                  Đăng ký
+                </Button>
+              </NavLink>
+            </div>
           )}
         </div>
 
