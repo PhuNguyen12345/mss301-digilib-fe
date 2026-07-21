@@ -12,6 +12,7 @@ import {
   LogOut,
   PanelTop,
   UsersRound,
+  Wallet,
 } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import useAuthStore from '@/store/authSlice'
@@ -153,6 +154,7 @@ function LibrarianLayout({ active = 'dashboard', title, description, action, chi
             ))}
           </SidebarGroup>
           <MainLink icon={UsersRound} label="Người dùng" to="/librarian/members" active={active === 'users'} />
+          <MainLink icon={Wallet} label="Phạt" to="/librarian/fines" active={active === 'fines'} />
           <MainLink icon={BarChart3} label="Báo cáo" to="#reports" />
           <MainLink icon={History} label="Nhật ký" to="#logs" />
         </nav>

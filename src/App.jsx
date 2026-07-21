@@ -20,6 +20,8 @@ import LoanDash from './pages/loans/LoanDash'
 import LoanHistory from './pages/loans/LoanHistory'
 import BorrowRequestQueue from './pages/loans/BorrowRequestQueue'
 import LoanRequestPage from './pages/loans/LoanRequestPage'
+import FineHistory from './pages/fines/FineHistory'
+import LibrarianFineLookup from './pages/fines/LibrarianFineLookup'
 
 // ── Admin pages ─────────────────────────────────────────────────────────────
 import AdminDashboard from './pages/dashboard/AdminDashboard'
@@ -102,6 +104,7 @@ function App() {
         <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
         <Route path="/loans" element={<PrivateRoute><LoanHistory /></PrivateRoute>} />
         <Route path="/loans/request" element={<PrivateRoute><LoanRequestPage /></PrivateRoute>} />
+        <Route path="/fines" element={<PrivateRoute><FineHistory /></PrivateRoute>} />
 
         {/* ── Admin routes ────────────────────────────────────────── */}
         <Route path="/admin" element={<PrivateRoute requiredRoles={['admin']}><AdminDashboard /></PrivateRoute>} />
@@ -142,6 +145,7 @@ function App() {
         <Route path="/librarian/loans/returns" element={<PrivateRoute requiredRoles={['admin', 'librarian']}><LoanDash /></PrivateRoute>} />
         <Route path="/librarian/loans/history" element={<PrivateRoute requiredRoles={['admin', 'librarian']}><LoanDash /></PrivateRoute>} />
         <Route path="/librarian/borrow-requests" element={<PrivateRoute requiredRoles={['admin', 'librarian']}><BorrowRequestQueue /></PrivateRoute>} />
+        <Route path="/librarian/fines" element={<PrivateRoute requiredRoles={['admin', 'librarian']}><LibrarianFineLookup /></PrivateRoute>} />
       </Routes>
     </BrowserRouter>
   )
