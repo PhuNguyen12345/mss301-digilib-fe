@@ -26,7 +26,7 @@ function extractRoles(payload) {
   const roles = payload.realm_access?.roles || []
   return roles.filter(
     (r) => !['offline_access', 'uma_authorization', 'default-roles-digilib-realm'].includes(r),
-  )
+  ).map((role) => role.toLowerCase())
 }
 
 function isTokenExpired(token) {
