@@ -11,6 +11,7 @@ import VerifyEmail from './pages/auth/VerifyEmail'
 import ForgotPassword from './pages/auth/ForgotPassword'
 import OAuth2Callback from './pages/auth/OAuth2Callback'
 import Onboarding from './pages/auth/Onboarding'
+import ResetPassword from './pages/auth/ResetPassword'
 import BookList from './pages/books/BookList'
 import BookDetail from './pages/books/BookDetail'
 import AboutUs from './pages/books/AboutUs'
@@ -79,6 +80,7 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/oauth2/callback" element={<OAuth2Callback />} />
         <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* ── Authenticated (any role) ────────────────────────────── */}
         <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
