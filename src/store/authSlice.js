@@ -41,6 +41,7 @@ const useAuthStore = create((set, get) => ({
   // State
   accessToken: null,
   refreshToken: null,
+  idToken: null,
   user: null,
   roles: [],
   initialized: false,
@@ -58,21 +59,28 @@ const useAuthStore = create((set, get) => ({
   },
 
   // ── Token management ────────────────────────────────────────────────────
-  setTokens: (accessToken, refreshToken) => {
+  setTokens: (accessToken, refreshToken, idToken) => {
     localStorage.setItem('access_token', accessToken)
     localStorage.setItem('refresh_token', refreshToken)
+    if (idToken) {
+      localStorage.setItem('id_token', idToken)
+    } else {
+      localStorage.removeItem('id_token')
+    }
     const payload = decodeJwtPayload(accessToken)
     const roles = extractRolesFromJwtPayload(payload)
     const fallbackUser = buildUserFromJwtPayload(payload, roles)
-    set({ accessToken, refreshToken, roles, user: fallbackUser })
+    set({ accessToken, refreshToken, idToken: idToken || null, roles, user: fallbackUser })
   },
 
   clearSession: () => {
     localStorage.removeItem('access_token')
     localStorage.removeItem('refresh_token')
+    localStorage.removeItem('id_token')
     set({
       accessToken: null,
       refreshToken: null,
+      idToken: null,
       user: null,
       roles: [],
     })
@@ -84,10 +92,12 @@ const useAuthStore = create((set, get) => ({
   initialize: async () => {
     const accessToken = localStorage.getItem('access_token')
     const refreshToken = localStorage.getItem('refresh_token')
+    const idToken = localStorage.getItem('id_token')
 
     if (!accessToken || isTokenExpired(accessToken)) {
       localStorage.removeItem('access_token')
       localStorage.removeItem('refresh_token')
+      localStorage.removeItem('id_token')
       set({ initialized: true })
       return
     }
@@ -95,7 +105,7 @@ const useAuthStore = create((set, get) => ({
     const payload = decodeJwtPayload(accessToken)
     const roles = extractRolesFromJwtPayload(payload)
     const fallbackUser = buildUserFromJwtPayload(payload, roles)
-    set({ accessToken, refreshToken, roles, user: fallbackUser })
+    set({ accessToken, refreshToken, idToken: idToken || null, roles, user: fallbackUser })
 
     // Attempt to fetch profile silently
     try {
@@ -113,8 +123,8 @@ const useAuthStore = create((set, get) => ({
     set({ loading: true })
     try {
       const res = await authApi.login(username, password)
-      const { access_token, refresh_token } = res.data
-      get().setTokens(access_token, refresh_token)
+      const { access_token, refresh_token, id_token, idToken } = res.data
+      get().setTokens(access_token, refresh_token, id_token || idToken)
 
       // Pull full profile
       try {
@@ -141,16 +151,36 @@ const useAuthStore = create((set, get) => ({
   },
 
   logout: async () => {
-    const { refreshToken, accessToken } = get()
+    const { refreshToken, idToken } = get()
+    let logoutRedirectUrl = null
+
+    if (refreshToken || idToken) {
+      try {
+        const res = await authApi.logout(refreshToken, idToken)
+        const data = res?.data
+        logoutRedirectUrl =
+          data?.logout_redirect_url ||
+          data?.logoutRedirectUrl ||
+          data?.redirect_url ||
+          data?.redirectUrl ||
+          data?.url
+      } catch (err) {
+        console.warn('Lỗi khi gọi API logout:', err)
+        const errData = err?.response?.data
+        logoutRedirectUrl =
+          errData?.logout_redirect_url ||
+          errData?.logoutRedirectUrl ||
+          errData?.redirect_url ||
+          errData?.redirectUrl
+      }
+    }
+
     get().clearSession()
 
-    // Best-effort server-side revocation
-    if (refreshToken && accessToken) {
-      try {
-        await authApi.logout(refreshToken)
-      } catch {
-        // Already cleared locally; server failure is acceptable
-      }
+    if (logoutRedirectUrl) {
+      window.location.href = logoutRedirectUrl
+    } else {
+      window.location.href = '/login'
     }
   },
 

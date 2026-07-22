@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { Loader2, CheckCircle2 } from 'lucide-react'
-import useAuthStore from '@/store/authSlice'
+import useAuthStore, { getRoleHomePath } from '@/store/authSlice'
 import { generateRandomString, generateCodeChallenge, OAUTH_CONFIG } from '@/lib/oauth2'
 
 function Login() {
@@ -93,6 +93,7 @@ function Login() {
     authUrl.searchParams.append('code_challenge', codeChallenge)
     authUrl.searchParams.append('code_challenge_method', 'S256')
     authUrl.searchParams.append('state', state)
+    authUrl.searchParams.append('prompt', 'select_account')
 
     // Redirect to Keycloak/Google
     window.location.href = authUrl.toString()

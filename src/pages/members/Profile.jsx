@@ -232,9 +232,8 @@ function Profile() {
   }
   const { logout } = useAuthStore()
 
-  const handleLogout = () => {
-    logout()
-    window.location.href = '/'
+  const handleLogout = async () => {
+    await logout()
   }
 
   // Show skeleton while initializing or loading user
