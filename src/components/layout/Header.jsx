@@ -112,9 +112,15 @@ function NotificationBell() {
 function Header() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated())
   const user = useAuthStore((s) => s.user)
+  const roles = useAuthStore((s) => s.roles)
   const logout = useAuthStore((s) => s.logout)
   const navigate = useNavigate()
   const displayName = [user?.lastName, user?.firstName].filter(Boolean).join(' ') || 'Tài khoản'
+  const staffPortal = roles.includes('admin')
+    ? { label: 'Quản trị', to: '/admin' }
+    : roles.includes('librarian')
+      ? { label: 'Trang thủ thư', to: '/librarian' }
+      : null
 
   const handleLogout = async () => {
     await logout()
@@ -153,6 +159,13 @@ function Header() {
         <div className="hidden items-center gap-1.5 md:flex">
           {isAuthenticated ? (
             <>
+              {staffPortal && (
+                <NavLink to={staffPortal.to}>
+                  <Button variant="outline" size="sm" className="rounded-full px-3">
+                    {staffPortal.label}
+                  </Button>
+                </NavLink>
+              )}
               <NotificationBell />
               <NavLink to="/fines">
                 <Button variant="ghost" size="sm" className="rounded-full px-3" aria-label="Nộp phạt">
