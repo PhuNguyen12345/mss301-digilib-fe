@@ -10,7 +10,6 @@ import {
   Grid2X2,
   History,
   LogOut,
-  PanelTop,
   UsersRound,
   Wallet,
 } from 'lucide-react'
@@ -31,8 +30,6 @@ const loanLinks = [
   { key: 'loan-returns', label: 'Trả sách', to: '/librarian/loans/returns' },
   { key: 'loan-history', label: 'Lịch sử mượn', to: '/librarian/loans/history' },
 ]
-
-const reservationLinks = ['Danh sách đặt trước', 'Hàng đợi']
 
 function SidebarSubLink({ item, active }) {
   return (
@@ -109,7 +106,6 @@ function LibrarianLayout({ active = 'dashboard', title, description, action, chi
   const [openGroups, setOpenGroups] = useState({
     books: isBookSectionActive,
     loans: isLoanSectionActive,
-    reservations: false,
   })
 
   function toggleGroup(key) {
@@ -142,13 +138,6 @@ function LibrarianLayout({ active = 'dashboard', title, description, action, chi
           <SidebarGroup icon={ClipboardList} label="Quản lý mượn trả" open={openGroups.loans} onToggle={() => toggleGroup('loans')}>
             {loanLinks.map((item) => (
               <SidebarSubLink key={item.key} item={item} active={active === item.key} />
-            ))}
-          </SidebarGroup>
-          <SidebarGroup icon={PanelTop} label="Quản lý đặt trước" open={openGroups.reservations} onToggle={() => toggleGroup('reservations')}>
-            {reservationLinks.map((label) => (
-              <a key={label} href="#reservations" className="block rounded-2xl px-3 py-2 text-[13px] text-slate-300 transition hover:bg-white/8 hover:text-white">
-                {label}
-              </a>
             ))}
           </SidebarGroup>
           <MainLink icon={UsersRound} label="Người dùng" to="/librarian/members" active={active === 'users'} />

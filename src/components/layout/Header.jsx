@@ -21,7 +21,6 @@ const navItems = [
   { label: 'Trang chủ', to: '/' },
   { label: 'Danh mục', to: '/books' },
   { label: 'Mượn sách', to: '/loans/request' },
-  { label: 'Khoản mượn', to: '/loans' },
   { label: 'Giới thiệu', to: '/about' },
 ]
 
