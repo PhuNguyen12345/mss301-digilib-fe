@@ -19,8 +19,8 @@ const navItems = [
   { key: 'dashboard', label: 'Dashboard', icon: Grid2X2, to: '/admin' },
   { key: 'users', label: 'Người dùng', icon: UsersRound, to: '/admin/members' },
   { key: 'borrow-requests', label: 'Yêu cầu mượn', icon: ClipboardList, to: '/admin/borrow-requests' },
-  { key: 'reports', label: 'Báo cáo', icon: BarChart3, to: '#reports' },
-  { key: 'logs', label: 'Nhật ký', icon: Clock3, to: '#logs' },
+  { key: 'reports', label: 'Báo cáo', icon: BarChart3, to: '/admin/reports' },
+  { key: 'logs', label: 'Nhật ký', icon: Clock3, to: '/admin/logs' },
 ]
 
 const bookLinks = [
@@ -37,16 +37,11 @@ function NavItem({ item, active }) {
     active ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-100 hover:bg-white/8 hover:text-white'
   }`
 
-  return item.to.startsWith('/') ? (
+  return (
     <Link to={item.to} className={className}>
       <Icon size={16} />
       <span>{item.label}</span>
     </Link>
-  ) : (
-    <a href={item.to} className={className}>
-      <Icon size={16} />
-      <span>{item.label}</span>
-    </a>
   )
 }
 
@@ -107,8 +102,9 @@ function AdminLayout({ active = 'dashboard', title, description, action, childre
   const displayName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Admin User' : 'Admin User'
   const initials = (user?.firstName?.[0] || 'A').toUpperCase() + (user?.lastName?.[0] || 'U').toUpperCase()
 
+  const isBookSectionActive = bookLinks.some((item) => item.key === active)
   const [openGroups, setOpenGroups] = useState({
-    books: true,
+    books: isBookSectionActive,
   })
 
   function toggleGroup(key) {

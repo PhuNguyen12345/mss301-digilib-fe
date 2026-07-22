@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom'
 import AdminLayout from '@/components/layout/AdminLayout'
 import LibrarianLayout from '@/pages/books/librarian/LibrarianLayout'
 import { getAllMembers, updateMemberStatus } from '@/api/memberApi'
+import { normalizeMemberList } from '@/utils/member'
 import {
   Search,
   Filter,
@@ -51,7 +52,19 @@ const STATUS_CONFIG = {
     ringClass: 'ring-red-500',
     bgSelected: 'bg-red-50 border-red-300',
   },
+  UNKNOWN: {
+    label: 'Chưa rõ',
+    icon: Shield,
+    classes: 'bg-slate-100 text-slate-700',
+    radioLabel: 'Chưa rõ',
+    radioDesc: 'Backend chưa trả trạng thái khóa rõ ràng',
+    radioIcon: Shield,
+    ringClass: 'ring-slate-500',
+    bgSelected: 'bg-slate-50 border-slate-300',
+  },
 }
+
+const MUTABLE_MEMBER_STATUSES = ['UNLOCKED', 'SOFT_LOCKED', 'LOCKED']
 
 const AVATAR_COLORS = [
   'bg-blue-100 text-blue-700',
@@ -82,8 +95,7 @@ function getAvatarColor(index) {
 /* ── Sub-components ──────────────────────────────────────────────────── */
 
 function StatusBadge({ status }) {
-  const config = STATUS_CONFIG[status]
-  if (!config) return null
+  const config = STATUS_CONFIG[status] || STATUS_CONFIG.UNKNOWN
   const Icon = config.icon
   return (
     <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-semibold ${config.classes}`}>
@@ -116,7 +128,7 @@ function SkeletonRow() {
 
 function StatusChangeModal({ member, onClose, onConfirm }) {
   const dialogRef = useRef(null)
-  const [selected, setSelected] = useState(member?.status || 'UNLOCKED')
+  const [selected, setSelected] = useState(member?.status || 'UNKNOWN')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(false)
@@ -200,7 +212,8 @@ function StatusChangeModal({ member, onClose, onConfirm }) {
 
         {/* Status options */}
         <div className="mt-5 space-y-2.5">
-          {Object.entries(STATUS_CONFIG).map(([key, config]) => {
+          {MUTABLE_MEMBER_STATUSES.map((key) => {
+            const config = STATUS_CONFIG[key]
             const Icon = config.radioIcon
             const isSelected = selected === key
             return (
@@ -288,7 +301,7 @@ function MemberList() {
     setError(null)
     try {
       const res = await getAllMembers()
-      setMembers(res.data || [])
+      setMembers(normalizeMemberList(res.data))
     } catch (err) {
       setError(err?.response?.data?.message || 'Không thể tải danh sách thành viên. Vui lòng thử lại.')
     } finally {
@@ -369,6 +382,7 @@ function MemberList() {
               <option value="UNLOCKED">Hoạt động</option>
               <option value="SOFT_LOCKED">Tạm khóa</option>
               <option value="LOCKED">Đã khóa</option>
+              <option value="UNKNOWN">Chưa rõ</option>
             </select>
           </div>
         </div>

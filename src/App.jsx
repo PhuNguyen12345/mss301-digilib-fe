@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import useAuthStore from './store/authSlice'
 import PrivateRoute from './routes/PrivateRoute'
 
@@ -20,6 +20,8 @@ import LoanDash from './pages/loans/LoanDash'
 import LoanHistory from './pages/loans/LoanHistory'
 import BorrowRequestQueue from './pages/loans/BorrowRequestQueue'
 import LoanRequestPage from './pages/loans/LoanRequestPage'
+import FineHistory from './pages/fines/FineHistory'
+import LibrarianFineLookup from './pages/fines/LibrarianFineLookup'
 
 // ── Admin pages ─────────────────────────────────────────────────────────────
 import AdminDashboard from './pages/dashboard/AdminDashboard'
@@ -30,6 +32,8 @@ import AdminCopyManage from './pages/books/admin/AdminCopyManage'
 import AdminCategoryManage from './pages/books/admin/AdminCategoryManage'
 import AdminClassificationManage from './pages/books/admin/AdminClassificationManage'
 import AdminCategoryForm from './pages/books/admin/AdminCategoryForm'
+import OperationsReportPage from './pages/insights/OperationsReportPage'
+import ActivityLogPage from './pages/insights/ActivityLogPage'
 
 // ── Librarian pages ─────────────────────────────────────────────────────────
 import LibrarianDashboard from './pages/books/librarian/LibrarianDashboard'
@@ -62,37 +66,6 @@ function App() {
         <Route path="/books" element={<BookList />} />
         <Route path="/books/:bookId" element={<BookDetail />} />
         <Route path="/about" element={<AboutUs />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/books" element={<AdminBookManage />} />
-        <Route path="/admin/books/deleted" element={<AdminDeletedBookManage />} />
-        <Route path="/admin/books/add" element={<Navigate to="/admin/books" replace />} />
-        <Route path="/admin/books/:bookId/edit" element={<Navigate to="/admin/books" replace />} />
-        <Route path="/admin/digital-books" element={<AdminDigitalBookManage />} />
-        <Route path="/admin/digital-books/add" element={<Navigate to="/admin/digital-books" replace />} />
-        <Route path="/admin/digital-books/:resourceId/edit" element={<Navigate to="/admin/digital-books" replace />} />
-        <Route path="/admin/copies" element={<AdminCopyManage />} />
-        <Route path="/admin/copies/add" element={<Navigate to="/admin/copies" replace />} />
-        <Route path="/admin/copies/:copyId/edit" element={<Navigate to="/admin/copies" replace />} />
-        <Route path="/admin/categories" element={<AdminCategoryManage />} />
-        <Route path="/admin/categories/add" element={<Navigate to="/admin/categories" replace />} />
-        <Route path="/admin/categories/:categoryId/edit" element={<Navigate to="/admin/categories" replace />} />
-        <Route path="/admin/classifications" element={<AdminClassificationManage />} />
-        <Route path="/librarian" element={<LibrarianDashboard />} />
-        <Route path="/librarian/books" element={<LibrarianBookCatalog />} />
-        <Route path="/librarian/books/add" element={<LibrarianBookForm mode="add" />} />
-        <Route path="/librarian/books/:bookId/edit" element={<LibrarianBookForm mode="edit" />} />
-        <Route path="/librarian/inventory" element={<LibrarianInventory />} />
-        <Route path="/librarian/inventory/add" element={<LibrarianInventoryForm mode="add" />} />
-        <Route path="/librarian/inventory/:copyId/edit" element={<LibrarianInventoryForm mode="edit" />} />
-        <Route path="/librarian/digital-books" element={<LibrarianDigitalBooks />} />
-        <Route path="/librarian/digital-books/add" element={<LibrarianDigitalBookForm mode="add" />} />
-        <Route path="/librarian/digital-books/:resourceId/edit" element={<LibrarianDigitalBookForm mode="edit" />} />
-        <Route path="/librarian/genres" element={<LibrarianGenres />} />
-        <Route path="/librarian/genres/add" element={<LibrarianGenreForm mode="add" />} />
-        <Route path="/librarian/genres/:genreId/edit" element={<LibrarianGenreForm mode="edit" />} />
-        <Route path="/librarian/classifications" element={<LibrarianClassifications />} />
-        <Route path="/librarian/classifications/add" element={<LibrarianClassificationForm mode="add" />} />
-        <Route path="/librarian/classifications/:classificationId/edit" element={<LibrarianClassificationForm mode="edit" />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
@@ -102,10 +75,12 @@ function App() {
         <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
         <Route path="/loans" element={<PrivateRoute><LoanHistory /></PrivateRoute>} />
         <Route path="/loans/request" element={<PrivateRoute><LoanRequestPage /></PrivateRoute>} />
+        <Route path="/fines" element={<PrivateRoute><FineHistory /></PrivateRoute>} />
 
         {/* ── Admin routes ────────────────────────────────────────── */}
         <Route path="/admin" element={<PrivateRoute requiredRoles={['admin']}><AdminDashboard /></PrivateRoute>} />
         <Route path="/admin/books" element={<PrivateRoute requiredRoles={['admin']}><AdminBookManage /></PrivateRoute>} />
+        <Route path="/admin/books/deleted" element={<PrivateRoute requiredRoles={['admin']}><AdminDeletedBookManage /></PrivateRoute>} />
         <Route path="/admin/books/add" element={<PrivateRoute requiredRoles={['admin']}><AdminBookForm mode="add" /></PrivateRoute>} />
         <Route path="/admin/books/:bookId/edit" element={<PrivateRoute requiredRoles={['admin']}><AdminBookForm mode="edit" /></PrivateRoute>} />
         <Route path="/admin/digital-books" element={<PrivateRoute requiredRoles={['admin']}><AdminDigitalBookManage /></PrivateRoute>} />
@@ -117,8 +92,11 @@ function App() {
         <Route path="/admin/categories" element={<PrivateRoute requiredRoles={['admin']}><AdminCategoryManage /></PrivateRoute>} />
         <Route path="/admin/categories/add" element={<PrivateRoute requiredRoles={['admin']}><AdminCategoryForm mode="add" /></PrivateRoute>} />
         <Route path="/admin/categories/:categoryId/edit" element={<PrivateRoute requiredRoles={['admin']}><AdminCategoryForm mode="edit" /></PrivateRoute>} />
+        <Route path="/admin/classifications" element={<PrivateRoute requiredRoles={['admin']}><AdminClassificationManage /></PrivateRoute>} />
         <Route path="/admin/members" element={<PrivateRoute requiredRoles={['admin']}><MemberList /></PrivateRoute>} />
         <Route path="/admin/borrow-requests" element={<PrivateRoute requiredRoles={['admin']}><BorrowRequestQueue /></PrivateRoute>} />
+        <Route path="/admin/reports" element={<PrivateRoute requiredRoles={['admin']}><OperationsReportPage mode="admin" /></PrivateRoute>} />
+        <Route path="/admin/logs" element={<PrivateRoute requiredRoles={['admin']}><ActivityLogPage mode="admin" /></PrivateRoute>} />
 
         {/* ── Librarian routes ────────────────────────────────────── */}
         <Route path="/librarian" element={<PrivateRoute requiredRoles={['admin', 'librarian']}><LibrarianDashboard /></PrivateRoute>} />
@@ -142,6 +120,9 @@ function App() {
         <Route path="/librarian/loans/returns" element={<PrivateRoute requiredRoles={['admin', 'librarian']}><LoanDash /></PrivateRoute>} />
         <Route path="/librarian/loans/history" element={<PrivateRoute requiredRoles={['admin', 'librarian']}><LoanDash /></PrivateRoute>} />
         <Route path="/librarian/borrow-requests" element={<PrivateRoute requiredRoles={['admin', 'librarian']}><BorrowRequestQueue /></PrivateRoute>} />
+        <Route path="/librarian/fines" element={<PrivateRoute requiredRoles={['admin', 'librarian']}><LibrarianFineLookup /></PrivateRoute>} />
+        <Route path="/librarian/reports" element={<PrivateRoute requiredRoles={['admin', 'librarian']}><OperationsReportPage mode="librarian" /></PrivateRoute>} />
+        <Route path="/librarian/logs" element={<PrivateRoute requiredRoles={['admin', 'librarian']}><ActivityLogPage mode="librarian" /></PrivateRoute>} />
       </Routes>
     </BrowserRouter>
   )

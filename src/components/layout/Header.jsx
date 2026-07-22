@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { Bell, CircleUserRound, Compass, Menu } from 'lucide-react'
-import { NavLink } from 'react-router-dom'
+import { Bell, CircleUserRound, Compass, LogOut, Menu, Wallet } from 'lucide-react'
+import { NavLink, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import useAuthStore from '@/store/authSlice'
 import useNotificationStore from '@/store/notificationSlice'
@@ -113,12 +113,19 @@ function Header() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated())
   const user = useAuthStore((s) => s.user)
   const roles = useAuthStore((s) => s.roles)
+  const logout = useAuthStore((s) => s.logout)
+  const navigate = useNavigate()
   const displayName = [user?.lastName, user?.firstName].filter(Boolean).join(' ') || 'Tài khoản'
   const staffPortal = roles.includes('admin')
     ? { label: 'Quản trị', to: '/admin' }
     : roles.includes('librarian')
       ? { label: 'Trang thủ thư', to: '/librarian' }
       : null
+
+  const handleLogout = async () => {
+    await logout()
+    navigate('/login', { replace: true })
+  }
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200/70 bg-white/82 backdrop-blur-xl">
@@ -160,12 +167,28 @@ function Header() {
                 </NavLink>
               )}
               <NotificationBell />
+              <NavLink to="/fines">
+                <Button variant="ghost" size="sm" className="rounded-full px-3" aria-label="Nộp phạt">
+                  <Wallet size={16} />
+                  Nộp phạt
+                </Button>
+              </NavLink>
               <NavLink to="/profile">
                 <Button variant="secondary" size="sm" className="rounded-full px-3" aria-label="Tài khoản">
                   <CircleUserRound size={16} />
                   {displayName}
                 </Button>
               </NavLink>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="rounded-full px-3"
+                aria-label="Đăng xuất"
+                onClick={handleLogout}
+              >
+                <LogOut size={16} />
+                Đăng xuất
+              </Button>
             </>
           ) : (
             <NavLink to="/login">
