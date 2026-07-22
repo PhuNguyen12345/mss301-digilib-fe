@@ -17,9 +17,35 @@ import {
 } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { getLoans, renewLoan, returnBook } from '@/api/loanApi'
+import { getAllMembers } from '@/api/memberApi'
 import LibrarianLayout from '@/pages/books/librarian/LibrarianLayout'
+import { createMemberNameMap } from '@/utils/member'
 
 const PAGE_SIZE = 20
+
+const VIEW_CONFIG = {
+  loans: {
+    activeNav: 'loans',
+    title: 'Phiếu mượn',
+    description: 'Theo dõi các phiếu đang mượn, quá hạn và thực hiện gia hạn khi cần.',
+    statuses: ['BORROWED', 'OVERDUE'],
+    emptyMessage: 'Không có phiếu mượn đang hoạt động.',
+  },
+  returns: {
+    activeNav: 'loan-returns',
+    title: 'Trả sách',
+    description: 'Tiếp nhận và hoàn tất trả sách cho các phiếu đang mượn hoặc đã quá hạn.',
+    statuses: ['BORROWED', 'OVERDUE'],
+    emptyMessage: 'Không có phiếu nào đang chờ trả sách.',
+  },
+  history: {
+    activeNav: 'loan-history',
+    title: 'Lịch sử mượn',
+    description: 'Tra cứu các giao dịch mượn sách đã hoàn tất hoặc được ghi nhận là mất.',
+    statuses: ['RETURNED', 'LOST'],
+    emptyMessage: 'Chưa có lịch sử mượn sách phù hợp.',
+  },
+}
 
 const STATUS_META = {
   BORROWED: { label: 'Đang mượn', classes: 'bg-blue-50 text-blue-700 ring-blue-600/10' },
@@ -108,11 +134,11 @@ function Modal({ open, title, eyebrow, onClose, children }) {
   )
 }
 
-function LoanDetailModal({ loan, onClose }) {
+function LoanDetailModal({ loan, memberName, onClose }) {
   if (!loan) return null
   const rows = [
     ['Mã phiếu', `#${loan.loanId}`],
-    ['Mã thành viên', loan.memberId],
+    ['Thành viên', memberName],
     ['Mã sách', loan.bookId],
     ['Mã bản sao', loan.copyId || 'Không áp dụng'],
     ['Loại tài liệu', loan.bookType === 'DIGITAL' ? 'Sách số' : 'Sách vật lý'],
@@ -141,7 +167,14 @@ function LoanDetailModal({ loan, onClose }) {
 
 function LoanDash() {
   const location = useLocation()
+  const viewMode = location.pathname.endsWith('/history')
+    ? 'history'
+    : location.pathname.endsWith('/returns')
+      ? 'returns'
+      : 'loans'
+  const view = VIEW_CONFIG[viewMode]
   const [loans, setLoans] = useState([])
+  const [memberNames, setMemberNames] = useState(() => new Map())
   const [page, setPage] = useState(0)
   const [totalPages, setTotalPages] = useState(1)
   const [totalElements, setTotalElements] = useState(0)
@@ -149,18 +182,22 @@ function LoanDash() {
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [query, setQuery] = useState('')
-  const initialStatus = location.pathname.endsWith('/history') ? 'ALL' : location.pathname.endsWith('/returns') ? 'BORROWED' : 'ALL'
-  const [statusFilter, setStatusFilter] = useState(initialStatus)
+  const [statusFilter, setStatusFilter] = useState('ALL')
   const [selectedLoan, setSelectedLoan] = useState(null)
   const [busyLoanId, setBusyLoanId] = useState(null)
+  const effectiveStatusFilter = statusFilter === 'ALL' || view.statuses.includes(statusFilter) ? statusFilter : 'ALL'
 
   const loadLoans = useCallback(async () => {
     setLoading(true)
     setError('')
     try {
-      const response = await getLoans({ page, size: PAGE_SIZE })
+      const [response, membersResponse] = await Promise.all([
+        getLoans({ page, size: PAGE_SIZE }),
+        getAllMembers().catch(() => null),
+      ])
       const data = response.data || {}
       setLoans(data.content || [])
+      if (membersResponse) setMemberNames(createMemberNameMap(membersResponse.data))
       setTotalPages(Math.max(data.totalPages || 1, 1))
       setTotalElements(data.totalElements || 0)
     } catch (requestError) {
@@ -184,12 +221,14 @@ function LoanDash() {
   const filteredLoans = useMemo(() => {
     const normalized = query.trim().toLowerCase()
     return loans.filter((loan) => {
-      const matchesStatus = statusFilter === 'ALL' || loan.status === statusFilter
-      const matchesQuery = !normalized || [loan.loanId, loan.memberId, loan.bookId, loan.copyId]
+      const matchesView = view.statuses.includes(loan.status)
+      const matchesStatus = effectiveStatusFilter === 'ALL' || loan.status === effectiveStatusFilter
+      const memberName = memberNames.get(String(loan.memberId)) || ''
+      const matchesQuery = !normalized || [loan.loanId, memberName, loan.bookId, loan.copyId]
         .some((value) => String(value ?? '').toLowerCase().includes(normalized))
-      return matchesStatus && matchesQuery
+      return matchesView && matchesStatus && matchesQuery
     })
-  }, [loans, query, statusFilter])
+  }, [effectiveStatusFilter, loans, memberNames, query, view])
 
   const metrics = useMemo(() => ({
     active: loans.filter((loan) => loan.status === 'BORROWED').length,
@@ -235,14 +274,8 @@ function LoanDash() {
     </Link>
   )
 
-  const activeNav = location.pathname.endsWith('/history')
-    ? 'loan-history'
-    : location.pathname.endsWith('/returns')
-      ? 'loan-returns'
-      : 'loans'
-
   return (
-    <LibrarianLayout active={activeNav} title="Quản lý mượn trả" description="Theo dõi các Loan đã được duyệt và xử lý trả hoặc gia hạn sách." action={action}>
+    <LibrarianLayout active={view.activeNav} title={view.title} description={view.description} action={viewMode === 'loans' ? action : null}>
       {notice && <div className="mb-4 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-[13px] font-medium text-emerald-700"><Check size={16} />{notice}</div>}
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard icon={BookOpen} label="Tổng phiếu" value={totalElements} />
@@ -260,12 +293,12 @@ function LoanDash() {
           <div className="flex items-center gap-2">
             <div className="relative">
               <Filter size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="h-10 appearance-none rounded-xl border border-slate-300 bg-white pl-9 pr-8 text-[13px] text-slate-700 outline-none focus:ring-2 focus:ring-slate-200">
+              <select value={effectiveStatusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="h-10 appearance-none rounded-xl border border-slate-300 bg-white pl-9 pr-8 text-[13px] text-slate-700 outline-none focus:ring-2 focus:ring-slate-200">
                 <option value="ALL">Tất cả trạng thái</option>
-                <option value="BORROWED">Đang mượn</option>
-                <option value="OVERDUE">Quá hạn</option>
-                <option value="RETURNED">Đã trả</option>
-                <option value="LOST">Đã mất</option>
+                {view.statuses.includes('BORROWED') && <option value="BORROWED">Đang mượn</option>}
+                {view.statuses.includes('OVERDUE') && <option value="OVERDUE">Quá hạn</option>}
+                {view.statuses.includes('RETURNED') && <option value="RETURNED">Đã trả</option>}
+                {view.statuses.includes('LOST') && <option value="LOST">Đã mất</option>}
               </select>
             </div>
             <button onClick={loadLoans} disabled={loading} className="grid h-10 w-10 place-items-center rounded-xl border border-slate-300 text-slate-600 hover:bg-slate-50" aria-label="Tải lại"><RefreshCw size={15} className={loading ? 'animate-spin' : ''} /></button>
@@ -285,22 +318,22 @@ function LoanDash() {
               {loading ? Array.from({ length: 5 }).map((_, index) => (
                 <tr key={index} className="animate-pulse">{Array.from({ length: 7 }).map((__, cell) => <td key={cell} className="px-5 py-5"><div className="h-4 rounded bg-slate-100" /></td>)}</tr>
               )) : filteredLoans.length === 0 ? (
-                <tr><td colSpan="7" className="px-5 py-16 text-center"><BookOpen size={24} className="mx-auto text-slate-300" /><p className="mt-3 text-[14px] font-medium text-slate-500">Không có phiếu mượn phù hợp.</p></td></tr>
+                <tr><td colSpan="7" className="px-5 py-16 text-center"><BookOpen size={24} className="mx-auto text-slate-300" /><p className="mt-3 text-[14px] font-medium text-slate-500">{view.emptyMessage}</p></td></tr>
               ) : filteredLoans.map((loan) => {
                 const busy = busyLoanId === loan.loanId
                 const actionable = loan.status === 'BORROWED' || loan.status === 'OVERDUE'
                 return (
                   <tr key={loan.loanId} className="hover:bg-slate-50/70">
                     <td className="px-5 py-4 text-[13px] font-semibold text-slate-950">#{loan.loanId}</td>
-                    <td className="px-5 py-4 text-[13px] text-slate-700">{loan.memberId}</td>
+                    <td className="px-5 py-4 text-[13px] font-medium text-slate-700">{memberNames.get(String(loan.memberId)) || 'Chưa có tên'}</td>
                     <td className="px-5 py-4"><p className="text-[13px] font-semibold text-slate-800">Sách #{loan.bookId}</p><p className="mt-1 text-[11px] text-slate-500">{loan.copyId ? `Bản sao #${loan.copyId}` : 'Tài liệu số'}</p></td>
                     <td className="px-5 py-4 text-[13px] text-slate-600">{formatDate(loan.borrowedAt)}</td>
                     <td className={`px-5 py-4 text-[13px] font-medium ${loan.status === 'OVERDUE' ? 'text-red-700' : 'text-slate-700'}`}>{formatDate(loan.dueDate)}</td>
                     <td className="px-5 py-4"><StatusBadge status={loan.status} /></td>
                     <td className="px-5 py-4"><div className="flex justify-end gap-1.5">
                       <button onClick={() => setSelectedLoan(loan)} className="grid h-9 w-9 place-items-center rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100" aria-label="Xem chi tiết"><Eye size={15} /></button>
-                      {actionable && loan.status === 'BORROWED' && <button onClick={() => handleRenew(loan)} disabled={busy || (loan.renewalCount || 0) >= 3} className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 px-3 text-[12px] font-semibold text-slate-700 hover:bg-slate-100 disabled:opacity-40"><RotateCcw size={14} />Gia hạn</button>}
-                      {actionable && <button onClick={() => handleReturn(loan)} disabled={busy} className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-slate-950 px-3 text-[12px] font-semibold text-white hover:bg-slate-800 disabled:opacity-50">{busy ? <Loader2 size={14} className="animate-spin" /> : <BookCheck size={14} />}Trả sách</button>}
+                      {viewMode === 'loans' && actionable && loan.status === 'BORROWED' && <button onClick={() => handleRenew(loan)} disabled={busy || (loan.renewalCount || 0) >= 3} className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 px-3 text-[12px] font-semibold text-slate-700 hover:bg-slate-100 disabled:opacity-40"><RotateCcw size={14} />Gia hạn</button>}
+                      {viewMode === 'returns' && actionable && <button onClick={() => handleReturn(loan)} disabled={busy} className="inline-flex h-9 items-center gap-1.5 rounded-xl bg-slate-950 px-3 text-[12px] font-semibold text-white hover:bg-slate-800 disabled:opacity-50">{busy ? <Loader2 size={14} className="animate-spin" /> : <BookCheck size={14} />}Trả sách</button>}
                     </div></td>
                   </tr>
                 )
@@ -317,7 +350,7 @@ function LoanDash() {
         </div>
       </section>
 
-      <LoanDetailModal loan={selectedLoan} onClose={() => setSelectedLoan(null)} />
+      <LoanDetailModal loan={selectedLoan} memberName={memberNames.get(String(selectedLoan?.memberId)) || 'Chưa có tên'} onClose={() => setSelectedLoan(null)} />
     </LibrarianLayout>
   )
 }

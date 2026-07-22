@@ -218,7 +218,7 @@ function LibrarianDashboard() {
 
       const recentActivities = loans.slice(0, 5).map((loan) => {
         const member = memberMap.get(String(loan.memberId)) || {}
-        const memberName = `${member.firstName || ''} ${member.lastName || ''}`.trim() || member.email || `Thành viên #${loan.memberId}`
+        const memberName = `${member.firstName || ''} ${member.lastName || ''}`.trim() || member.email || 'Chưa có tên'
 
         return {
           loanId: loan.loanId,

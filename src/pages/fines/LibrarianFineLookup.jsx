@@ -120,7 +120,7 @@ function FineTable({ fines, loading, showStudent, studentMap, busyFineId, onWaiv
             <tr key={fine.fineId} className="hover:bg-slate-50/70">
               {showStudent && (
                 <td className="px-5 py-4">
-                  <p className="text-[13px] font-semibold text-slate-950">{studentMap[fine.studentId]?.name || fine.studentId}</p>
+                  <p className="text-[13px] font-semibold text-slate-950">{studentMap[fine.studentId]?.name || 'Chưa có tên'}</p>
                   <p className="mt-1 text-[11px] text-slate-500">Email: {studentMap[fine.studentId]?.email || '—'}</p>
                 </td>
               )}

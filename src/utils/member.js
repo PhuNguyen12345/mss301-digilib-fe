@@ -83,3 +83,18 @@ export function normalizeMemberList(data) {
   if (!Array.isArray(data)) return []
   return data.map((item) => normalizeMemberProfile(item)).filter(Boolean)
 }
+
+export function getMemberDisplayName(member, fallback = 'Chưa có tên') {
+  if (!member) return fallback
+  return `${member.firstName || ''} ${member.lastName || ''}`.trim()
+    || member.email
+    || member.memberCode
+    || fallback
+}
+
+export function createMemberNameMap(data) {
+  return new Map(normalizeMemberList(data).map((member) => [
+    String(member.id),
+    getMemberDisplayName(member),
+  ]))
+}

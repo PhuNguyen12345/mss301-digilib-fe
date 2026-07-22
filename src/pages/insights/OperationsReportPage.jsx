@@ -6,7 +6,7 @@ import { getBooks } from '@/api/bookApi'
 import { getBorrowRequests, getLoans } from '@/api/loanApi'
 import { getAllMembers } from '@/api/memberApi'
 import LibrarianLayout from '@/pages/books/librarian/LibrarianLayout'
-import { normalizeMemberList } from '@/utils/member'
+import { createMemberNameMap, normalizeMemberList } from '@/utils/member'
 
 function formatCount(value) {
   return Number(value || 0).toLocaleString('vi-VN')
@@ -86,6 +86,7 @@ function OperationsReportPage({ mode = 'admin' }) {
     overdueLoans: 0,
     returnedLoans: 0,
     recentLoans: [],
+    memberNames: new Map(),
   })
 
   const loadReport = useCallback(async () => {
@@ -112,6 +113,7 @@ function OperationsReportPage({ mode = 'admin' }) {
         overdueLoans: loans.filter((loan) => loan.status === 'OVERDUE').length,
         returnedLoans: loans.filter((loan) => loan.status === 'RETURNED').length,
         recentLoans: loans.slice(0, 6),
+        memberNames: createMemberNameMap(membersResponse.data),
       })
     } catch (requestError) {
       setError(getErrorMessage(requestError, 'Không tải được dữ liệu báo cáo từ backend.'))
@@ -275,7 +277,7 @@ function OperationsReportPage({ mode = 'admin' }) {
                   {report.recentLoans.map((loan) => (
                     <tr key={loan.loanId} className="hover:bg-slate-50/70">
                       <td className="px-4 py-4 text-[13px] font-semibold text-slate-900">#{loan.loanId}</td>
-                      <td className="px-4 py-4 text-[13px] text-slate-700">#{loan.memberId}</td>
+                      <td className="px-4 py-4 text-[13px] font-medium text-slate-700">{report.memberNames.get(String(loan.memberId)) || 'Chưa có tên'}</td>
                       <td className="px-4 py-4 text-[13px] text-slate-700">#{loan.bookId}</td>
                       <td className="px-4 py-4 text-[13px] text-slate-500">{formatDateTime(loan.borrowedAt)}</td>
                       <td className="px-4 py-4">

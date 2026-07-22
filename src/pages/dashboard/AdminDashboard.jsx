@@ -16,7 +16,7 @@ import { getBooks, getDigitalResources } from '@/api/bookApi'
 import { getBorrowRequests, getLoans } from '@/api/loanApi'
 import { getAllMembers } from '@/api/memberApi'
 import AdminLayout from '@/components/layout/AdminLayout'
-import { normalizeMemberList } from '@/utils/member'
+import { createMemberNameMap, normalizeMemberList } from '@/utils/member'
 
 function formatCount(value) {
   return Number(value || 0).toLocaleString('vi-VN')
@@ -117,6 +117,7 @@ function AdminDashboard() {
       ])
 
       const members = normalizeMemberList(membersResponse.data)
+      const memberNames = createMemberNameMap(membersResponse.data)
       const resourcesPage = resourcesResponse.data || {}
       const loansPage = loansResponse.data || {}
 
@@ -132,7 +133,10 @@ function AdminDashboard() {
         activeMembers,
         softLockedMembers,
         lockedMembers,
-        recentLoans: loansPage.content || [],
+        recentLoans: (loansPage.content || []).map((loan) => ({
+          ...loan,
+          memberName: memberNames.get(String(loan.memberId)) || 'Chưa có tên',
+        })),
         recentResources: resourcesPage.content || [],
         totalLoans: loansPage.totalElements || 0,
       })
@@ -332,7 +336,7 @@ function AdminDashboard() {
                       <span>Phiếu #{loan.loanId}</span>
                     </div>
                     <p className="mt-1 text-[13px] text-slate-600">
-                      Thành viên #{loan.memberId} • Sách #{loan.bookId}
+                      {loan.memberName} • Sách #{loan.bookId}
                       {loan.copyId ? ` • Bản sao #${loan.copyId}` : ' • Tài liệu số'}
                     </p>
                   </div>
