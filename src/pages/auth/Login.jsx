@@ -20,7 +20,7 @@ function Login() {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated()) {
-      navigate('/', { replace: true })
+      navigate(getRoleHomePath(useAuthStore.getState().roles), { replace: true })
     }
   }, [isAuthenticated, navigate])
 

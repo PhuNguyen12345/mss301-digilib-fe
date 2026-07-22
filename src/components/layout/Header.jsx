@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { Bell, CircleUserRound, Compass, Menu, LogOut } from 'lucide-react'
-import { NavLink } from 'react-router-dom'
+import { Bell, CircleUserRound, Compass, LogOut, Menu, Wallet } from 'lucide-react'
+import { NavLink, useNavigate } from 'react-router-dom'
+import { Button } from '@/components/ui/button'
 import useAuthStore from '@/store/authSlice'
 import { Button } from '@/components/ui/button'
 import useNotificationStore from '@/store/notificationSlice'
@@ -110,11 +111,15 @@ function NotificationBell() {
 }
 
 function Header() {
-  const { user, roles, accessToken, logout } = useAuthStore()
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated())
+  const user = useAuthStore((s) => s.user)
+  const logout = useAuthStore((s) => s.logout)
+  const navigate = useNavigate()
+  const displayName = [user?.lastName, user?.firstName].filter(Boolean).join(' ') || 'Tài khoản'
 
-  const handleLogout = () => {
-    logout()
-    window.location.href = '/'
+  const handleLogout = async () => {
+    await logout()
+    navigate('/login', { replace: true })
   }
 
   return (
@@ -148,10 +153,14 @@ function Header() {
 
         <div className="hidden items-center gap-1.5 md:flex">
           {accessToken ? (
-            <>
-              <Button variant="ghost" size="icon" className="h-9 w-9" aria-label="Thông báo">
-                <Bell size={16} />
-              </Button>
+            <div>
+              <NotificationBell />
+              <NavLink to="/fines">
+                <Button variant="ghost" size="sm" className="rounded-full px-3" aria-label="Nộp phạt">
+                  <Wallet size={16} />
+                  Nộp phạt
+                </Button>
+              </NavLink>
               <NavLink to="/profile">
                 <Button variant="secondary" size="sm" className="rounded-full px-3" aria-label="Tài khoản">
                   <CircleUserRound size={16} />
@@ -174,9 +183,17 @@ function Header() {
               )}
               <Button variant="ghost" size="sm" className="rounded-full px-3 text-red-600 hover:bg-red-50 hover:text-red-700" onClick={handleLogout}>
                 <LogOut size={14} />
+              <Button
+                variant="ghost"
+                size="sm"
+                className="rounded-full px-3"
+                aria-label="Đăng xuất"
+                onClick={handleLogout}
+              >
+                <LogOut size={16} />
                 Đăng xuất
               </Button>
-            </>
+            </div>
           ) : (
             <div className="flex items-center gap-2">
               <NavLink to="/login">

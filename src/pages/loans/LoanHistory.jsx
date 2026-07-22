@@ -11,7 +11,7 @@ import {
   RotateCcw,
   Search,
 } from 'lucide-react'
-import { cancelBorrowRequest, getLoansByMember, getMyBorrowRequests, renewLoan } from '@/api/loanApi'
+import { getLoansByMember, renewLoan } from '@/api/loanApi'
 import Footer from '@/components/layout/Footer'
 import Header from '@/components/layout/Header'
 import useAuthStore from '@/store/authSlice'
@@ -22,16 +22,6 @@ const STATUS_META = {
   OVERDUE: { label: 'Quá hạn', classes: 'bg-red-50 text-red-700 ring-red-600/10' },
   RETURNED: { label: 'Đã trả', classes: 'bg-emerald-50 text-emerald-700 ring-emerald-600/10' },
   LOST: { label: 'Đã mất', classes: 'bg-amber-50 text-amber-700 ring-amber-600/10' },
-}
-
-const REQUEST_STATUS_LABEL = {
-  PENDING: 'Đang chờ duyệt',
-  BORROWED: 'Đã duyệt',
-  REJECTED: 'Đã từ chối',
-  CANCELLED: 'Đã hủy',
-  OVERDUE: 'Đã duyệt · Quá hạn',
-  RETURNED: 'Đã duyệt · Đã trả',
-  LOST: 'Đã duyệt · Đã mất',
 }
 
 function formatDate(value) {
@@ -66,19 +56,14 @@ function LoanHistory() {
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('ALL')
   const [busyLoanId, setBusyLoanId] = useState(null)
-  const [borrowRequests, setBorrowRequests] = useState([])
   const memberId = user?.id || user?.memberCode
 
   const loadLoans = useCallback(async () => {
     setLoading(true)
     setError('')
     try {
-      const [loanResponse, requestResponse] = await Promise.all([
-        memberId ? getLoansByMember() : Promise.resolve({ data: [] }),
-        getMyBorrowRequests({ size: 50 }),
-      ])
+      const loanResponse = memberId ? await getLoansByMember() : { data: [] }
       setLoans(Array.isArray(loanResponse.data) ? loanResponse.data : [])
-      setBorrowRequests(requestResponse.data?.content || [])
     } catch (requestError) {
       setError(requestError?.response?.data?.message || 'Không thể tải lịch sử mượn sách. Vui lòng thử lại.')
     } finally {
@@ -128,20 +113,6 @@ function LoanHistory() {
     }
   }
 
-  async function handleCancelRequest(requestId) {
-    if (!window.confirm(`Hủy yêu cầu mượn #${requestId}?`)) return
-    setBusyLoanId(`request-${requestId}`)
-    try {
-      const response = await cancelBorrowRequest(requestId)
-      setBorrowRequests((items) => items.map((item) => item.requestId === requestId ? response.data : item))
-      setNotice(`Đã hủy yêu cầu mượn #${requestId}.`)
-    } catch (requestError) {
-      setError(requestError?.response?.data?.message || 'Không thể hủy yêu cầu mượn.')
-    } finally {
-      setBusyLoanId(null)
-    }
-  }
-
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,#fcfbf7,#f8fafc_45%,#eef4fb)] text-slate-950">
       <Header />
@@ -164,18 +135,6 @@ function LoanHistory() {
           <SummaryCard icon={Clock3} label="Đang mượn" value={counts.borrowed} classes="bg-blue-50 text-blue-700" />
           <SummaryCard icon={AlertTriangle} label="Quá hạn" value={counts.overdue} classes="bg-red-50 text-red-700" />
           <SummaryCard icon={BookCheck} label="Đã trả" value={counts.returned} classes="bg-emerald-50 text-emerald-700" />
-        </section>
-
-        <section className="mt-5 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 px-5 py-4"><h2 className="font-serif text-xl font-semibold">Yêu cầu mượn sách</h2><p className="mt-1 text-sm text-slate-500">Theo dõi các yêu cầu đang chờ thủ thư hoặc quản trị viên duyệt.</p></div>
-          <div className="divide-y divide-slate-100">
-            {borrowRequests.length === 0 ? <p className="px-5 py-8 text-center text-sm text-slate-500">Bạn chưa gửi yêu cầu mượn nào.</p> : borrowRequests.map((request) => (
-              <div key={request.requestId} className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-                <div><p className="text-sm font-semibold">Sách #{request.bookId} · Yêu cầu #{request.requestId}</p><p className="mt-1 text-xs text-slate-500">{new Date(request.requestedAt).toLocaleString('vi-VN')} · {request.bookType}</p>{request.rejectionReason && <p className="mt-1 text-xs text-red-600">Lý do: {request.rejectionReason}</p>}</div>
-                <div className="flex items-center gap-3"><span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold">{REQUEST_STATUS_LABEL[request.status] || request.status}</span>{request.status === 'PENDING' && <button onClick={() => handleCancelRequest(request.requestId)} disabled={busyLoanId === `request-${request.requestId}`} className="text-xs font-semibold text-red-600">Hủy yêu cầu</button>}</div>
-              </div>
-            ))}
-          </div>
         </section>
 
         <section className="mt-5 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">

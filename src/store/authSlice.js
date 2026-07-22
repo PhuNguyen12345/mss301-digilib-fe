@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import * as authApi from '@/api/authApi'
 import * as memberApi from '@/api/memberApi'
 import useNotificationStore from '@/store/notificationSlice'
+import { buildUserFromJwtPayload, extractRolesFromJwtPayload, normalizeMemberProfile } from '@/utils/member'
 
 // ── JWT helpers (no external dependency) ────────────────────────────────────
 
@@ -21,19 +22,17 @@ function decodeJwtPayload(token) {
   }
 }
 
-function extractRoles(payload) {
-  if (!payload) return []
-  const roles = payload.realm_access?.roles || []
-  return roles.filter(
-    (r) => !['offline_access', 'uma_authorization', 'default-roles-digilib-realm'].includes(r),
-  )
-}
-
 function isTokenExpired(token) {
   const payload = decodeJwtPayload(token)
   if (!payload?.exp) return true
   // Consider expired 30 seconds early to avoid edge-case failures
   return Date.now() >= (payload.exp - 30) * 1000
+}
+
+export function getRoleHomePath(roles) {
+  if (roles?.includes('admin')) return '/admin'
+  if (roles?.includes('librarian')) return '/librarian'
+  return '/'
 }
 
 // ── Zustand store ───────────────────────────────────────────────────────────
@@ -63,8 +62,9 @@ const useAuthStore = create((set, get) => ({
     localStorage.setItem('access_token', accessToken)
     localStorage.setItem('refresh_token', refreshToken)
     const payload = decodeJwtPayload(accessToken)
-    const roles = extractRoles(payload)
-    set({ accessToken, refreshToken, roles })
+    const roles = extractRolesFromJwtPayload(payload)
+    const fallbackUser = buildUserFromJwtPayload(payload, roles)
+    set({ accessToken, refreshToken, roles, user: fallbackUser })
   },
 
   clearSession: () => {
@@ -93,13 +93,14 @@ const useAuthStore = create((set, get) => ({
     }
 
     const payload = decodeJwtPayload(accessToken)
-    const roles = extractRoles(payload)
-    set({ accessToken, refreshToken, roles })
+    const roles = extractRolesFromJwtPayload(payload)
+    const fallbackUser = buildUserFromJwtPayload(payload, roles)
+    set({ accessToken, refreshToken, roles, user: fallbackUser })
 
     // Attempt to fetch profile silently
     try {
       const res = await memberApi.getMyProfile()
-      set({ user: res.data })
+      set({ user: normalizeMemberProfile(res.data, { roles }) || fallbackUser })
     } catch {
       // Profile fetch failure is non-fatal; token might still be valid for
       // other requests (or the member-service is down)
@@ -118,7 +119,7 @@ const useAuthStore = create((set, get) => ({
       // Pull full profile
       try {
         const profileRes = await memberApi.getMyProfile()
-        set({ user: profileRes.data })
+        set((state) => ({ user: normalizeMemberProfile(profileRes.data, { roles: state.roles }) || state.user }))
       } catch {
         // Non-fatal: profile will be JIT-provisioned next time
       }
@@ -156,8 +157,10 @@ const useAuthStore = create((set, get) => ({
   fetchProfile: async () => {
     try {
       const res = await memberApi.getMyProfile()
-      set({ user: res.data })
-      return res.data
+      const roles = get().roles
+      const user = normalizeMemberProfile(res.data, { roles })
+      set({ user })
+      return user
     } catch (err) {
       throw err
     }
@@ -167,8 +170,10 @@ const useAuthStore = create((set, get) => ({
     set({ loading: true })
     try {
       const res = await memberApi.updateMyProfile(payload)
-      set({ user: res.data })
-      return res.data
+      const roles = get().roles
+      const user = normalizeMemberProfile(res.data, { roles })
+      set({ user })
+      return user
     } finally {
       set({ loading: false })
     }

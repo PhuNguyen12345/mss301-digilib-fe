@@ -12,6 +12,7 @@ import {
   LogOut,
   PanelTop,
   UsersRound,
+  Wallet,
 } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import useAuthStore from '@/store/authSlice'
@@ -30,6 +31,7 @@ const loanLinks = [
   { key: 'loan-returns', label: 'Trả sách', to: '/librarian/loans/returns' },
   { key: 'loan-history', label: 'Lịch sử mượn', to: '/librarian/loans/history' },
 ]
+
 const reservationLinks = ['Danh sách đặt trước', 'Hàng đợi']
 
 function SidebarSubLink({ item, active }) {
@@ -66,16 +68,11 @@ function MainLink({ icon: Icon, label, to, active }) {
     active ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-100 hover:bg-white/8 hover:text-white'
   }`
 
-  return to.startsWith('/') ? (
+  return (
     <Link to={to} className={className}>
       <Icon size={16} />
       <span>{label}</span>
     </Link>
-  ) : (
-    <a href={to} className={className}>
-      <Icon size={16} />
-      <span>{label}</span>
-    </a>
   )
 }
 
@@ -107,9 +104,11 @@ function LibrarianLayout({ active = 'dashboard', title, description, action, chi
   const displayName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Librarian' : 'Librarian'
   const initials = (user?.firstName?.[0] || 'L').toUpperCase() + (user?.lastName?.[0] || '').toUpperCase()
 
+  const isBookSectionActive = bookLinks.some((item) => item.key === active)
+  const isLoanSectionActive = loanLinks.some((item) => item.key === active)
   const [openGroups, setOpenGroups] = useState({
-    books: true,
-    loans: active.startsWith('loan'),
+    books: isBookSectionActive,
+    loans: isLoanSectionActive,
     reservations: false,
   })
 
@@ -153,8 +152,9 @@ function LibrarianLayout({ active = 'dashboard', title, description, action, chi
             ))}
           </SidebarGroup>
           <MainLink icon={UsersRound} label="Người dùng" to="/librarian/members" active={active === 'users'} />
-          <MainLink icon={BarChart3} label="Báo cáo" to="#reports" />
-          <MainLink icon={History} label="Nhật ký" to="#logs" />
+          <MainLink icon={Wallet} label="Phạt" to="/librarian/fines" active={active === 'fines'} />
+          <MainLink icon={BarChart3} label="Báo cáo" to="/librarian/reports" active={active === 'reports'} />
+          <MainLink icon={History} label="Nhật ký" to="/librarian/logs" active={active === 'logs'} />
         </nav>
 
         <div className="mt-4 rounded-2xl border border-white/10 bg-white/6 p-3">

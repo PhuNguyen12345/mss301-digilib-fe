@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Loader2, AlertCircle } from 'lucide-react'
-import useAuthStore from '@/store/authSlice'
+import useAuthStore, { getRoleHomePath } from '@/store/authSlice'
 import { OAUTH_CONFIG } from '@/lib/oauth2'
 import { exchangeOAuth2Code } from '@/api/authApi'
 
